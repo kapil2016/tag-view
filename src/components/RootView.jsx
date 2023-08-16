@@ -55,10 +55,10 @@ const RootView = (props) => {
   }
 
   useEffect(() => {
-    if (data) {
+    if (data && expend) {
       dataRef.current.value = data;
     }
-  }, []);
+  }, [expend]);
 
 
   return (
