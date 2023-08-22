@@ -1,12 +1,13 @@
 import styles from "./RootView.module.css";
-import HelperView from "./HelperView";
+
 import { useState, useRef, useEffect } from "react";
 import findElementById from "../utility-functions/findElementById";
 
 const RootView = (props) => {
   const [expend, setExpend] = useState(true);
   const [tagVisibility, setTagVisibility] = useState(true);
-  const dataRef = useRef(" ");
+  const [inputValue, setInputValue] = useState("");
+
   const nameRef = useRef(" ");
   const { name, data, childs, setTree, id } = props;
 
@@ -16,25 +17,26 @@ const RootView = (props) => {
       delete parent["data"];
 
       if (parent.childs) {
-        parent.childs.push({ id: Date.now(), name: "New Child", data: " " });
+        parent.childs.push({ id: Date.now(), name: "New Child", data: "data" });
       } else {
-        parent["childs"] = [{ id: Date.now(), name: "New Child", data: " " }];
+        parent["childs"] = [{ id: Date.now(), name: "New Child", data: "data" }];
       }
 
       return { ...tree };
     });
   }
 
-  function dataChangeHandler(e) {
-    e.preventDefault();
-    const dataValue = dataRef.current.value;
+  function valueChangeHandler(e) {
+    // e.preventDefault();
+    const dataValue = e.target.value;
 
     setTree((tree) => {
       const parent = findElementById(tree, id);
       parent.data = dataValue;
-      dataRef.current.blur();
+      // dataRef.current.blur();
       return { ...tree };
     });
+    setInputValue(dataValue);
   }
 
   function nameChangeHandler(e) {
@@ -46,7 +48,7 @@ const RootView = (props) => {
       parent.name = nameValue;
       return { ...tree };
     });
-    
+
     setTagVisibility(true);
   }
 
@@ -56,10 +58,9 @@ const RootView = (props) => {
 
   useEffect(() => {
     if (data && expend) {
-      dataRef.current.value = data;
+      setInputValue(data);
     }
-  }, [expend]);
-
+  }, [expend , data]);
 
   return (
     <div className={styles.parent}>
@@ -88,13 +89,26 @@ const RootView = (props) => {
       </div>
       {expend && (
         <>
-          {data ? (
-            <form onSubmit={dataChangeHandler}>
+          {typeof(data) === "string"? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}
+            >
               <label htmlFor="data"> Data:</label>
-              <input id="data" ref={dataRef}></input>
+              <input
+                id="data"
+                value={inputValue}
+                onChange={valueChangeHandler}
+              ></input>
             </form>
           ) : (
-            <HelperView childs={childs} setTree={setTree}></HelperView>
+            childs &&
+            childs.map((item) => {
+              return (
+                <RootView key={item.id} {...item} setTree={setTree}></RootView>
+              );
+            })
           )}
         </>
       )}
